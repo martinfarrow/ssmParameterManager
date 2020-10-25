@@ -1,4 +1,4 @@
-# pythonSSMparameterManager
+# ssmParameterManager
 A python based system for managing large numbers of ssm parameters store entries.
 
 The system is designed so that the user can pull large numbers of parameters by path into a local directory, edit and manipulate them and then upload them.
