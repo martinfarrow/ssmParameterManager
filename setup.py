@@ -7,6 +7,6 @@ setup(name='ssmParameterManager',
       description='A module with command line utility to manipulate parameter store entries',
       author='Martin Farrow',
       author_email='ssmParameterManager@dibley.net',
-      py_modules=['param'],
+      py_modules=['ssmParameterManager'],
       license='LICENSE',
     )
