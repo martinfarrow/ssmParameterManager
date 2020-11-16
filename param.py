@@ -2,18 +2,11 @@
 import boto3
 import botocore
 from botocore.exceptions import ClientError
-import base64
-import hashlib
 import os.path
-import json
-import dateutil.parser as dp
-import datetime
 import click
 import re
 import logging 
 import os
-import sys
-import pprint
 import pathlib
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', datefmt='%Y:%m:%d-%H:%M:%S')
@@ -32,51 +25,17 @@ def add_options(options):
 
 MAX_NUM_THROTTLE_RETRIES = 16
 
-class ssmManager():
-
-    container_2_image = { "docserver": 'doc',
-                          "frontend" : 'frontend',
-                          "dbloader" : 'dbloader',
-                          "affordability": 'affordability',
-                          "scorecard": 'scorecard',
-                          "pvm" : 'pvm'
-                        }
+class ssmParameterManager():
 
     def __init__(self, session, log, build_env=None):
         self.log = log
         my_retry_config = botocore.config.Config(retries={'max_attempts': MAX_NUM_THROTTLE_RETRIES})
         self.ssm = boto3.client('ssm', config=my_retry_config)
 
-        self.OutRe = re.compile(r'(.*)\n', re.MULTILINE)
-
-        if (build_env is not None):
-            self.setBuildEnv(build_env)
-
         # ssm configs
         self.ssmDryrun = False
         self.ssmKeyId = None
         self.ssmOverwrite = False
-
-    def setBuildEnv(self, build_env):
-        self.build_env = build_env
-        self.asgRe = re.compile(r'^{}'.format(self.build_env))
-
-    def __toDHMS(self, seconds, return_type='list'):
-        """Utility function to convert seconds to days, hours, minutes and seconds """
-        remainder = int(seconds)
-        days  = divmod(remainder, 86400)[0]
-        remainder = remainder - (86400 * days)
-
-        hours  = divmod(remainder, 3600)[0]
-        remainder = remainder - (3600 * hours)
-
-        minutes  = divmod(remainder, 60)[0]
-        seconds = remainder - (60 * minutes)
-
-        if return_type == 'string':
-            return "{:02d}-{:02d}:{:02d}:{:02d}".format(days, hours, minutes, seconds)
-
-        return([days, hours, minutes, seconds])
 
     def ssmGetValueFromFile(self,path):
         with open(path, "r") as fp:
@@ -232,10 +191,6 @@ class ssmManager():
             for params in response['Parameters']:
                 print(" {}".format(params['Name']))
 
-global_options = [
-    click.option('--build_env', required=True, type=click.STRING, help="Environment (stage/prod/pre-prod...)"),
-]
-
 ssm_options = [ 
     click.argument('paths', type=click.STRING, nargs=-1),
     click.option('--get', is_flag=True, default=False, help="Retrieve the parameters value"),
@@ -247,10 +202,13 @@ ssm_options = [
     click.option('--force', is_flag=True, default=False, help="Overwrite existing parameters when uploading"),
     click.option('--delete', is_flag=True, default=False, help="delete the specified parameters set with --path - use with care, suggest --dryrun first"),
     ]
-@click.command(name='ssm', short_help='Parameter functions')
+
+@click.command()
 @add_options(ssm_options)
-def ssm(delete, force, key_id, dryrun, uploadpath, savepath, path, get, paths):
-    global em
+def cli(delete, force, key_id, dryrun, uploadpath, savepath, path, get, paths):
+    session = boto3.Session()
+    em = ssmParameterManager(session=session, log=logger)
+
     em.ssmDryrun = dryrun
     em.ssmKeyId = key_id
     em.ssmOverwrite = force
@@ -288,14 +246,6 @@ def ssm(delete, force, key_id, dryrun, uploadpath, savepath, path, get, paths):
     # if nothing else then we just list the parameters matching begins with
     for name in paths:
             em.getParameters(name,justList=True)
-
-@click.group()
-def cli():
-    global em
-    session = boto3.Session()
-    em = ssmManager(session=session, log=logger)
-
-cli.add_command(ssm)
 
 if __name__ == '__main__':
     cli()
