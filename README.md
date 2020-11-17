@@ -49,52 +49,52 @@ Options:
   
 ### Examples
  
- All these examples assume that you have KEY_ID set in your environment.
+ All these examples assume that you have KEY\_ID set in your environment.
  
 To recursive list parameters 'under' a path.
  
  ```
- param.py /some/path
+ ssmParameterManager.py /some/path
  ```
  
 To list a number of paths
  
  ```
- param.py /some/path /someother/path
+ ssmParameterManager.py /some/path /someother/path
  ```
  
 To get just a single value to stdout:
  
  ```
- param.py --get /some/parameter/path
+ ssmParameterManager.py --get /some/parameter/path
  ```
  
 To download everything into a local directory called ALL
  
  ```
- param.py --savepath ./ALL --path /
+ ssmParameterManager.py --savepath ./ALL --path /
  ```
 
 To download some specific paths in a directory called 'mystuff'
 
 ```
-param.py --savepath ./mystuff --path /local/shared /stage/lime
+ssmParameterManager.py --savepath ./mystuff --path /local/shared /stage/lime
 ```
 
-To upload parameters in mystuff, by uploading everyting under ./mystuff/martin as /martin.
+To upload parameters in mystuff, by uploading everything under ./mystuff/martin as /martin.
  
 ```
-param.py --uploadpath ./mystuff --path /martin
+ssmParameterManager.py --uploadpath ./mystuff --path /martin
 ``` 
 
 Do a dryrun of deleting everthing below /martin. Do not forget the --path, otherwise the --delete will be ignored and it will just list parameters.
 
 ```
-param.py --delete --dryrun --path /martin
+ssmParameterManager.py --delete --dryrun --path /martin
 ``` 
  
 Actually delete everthing below /martin, again don't forget --path, other it will just do the list action. When the delete is working it will log each parameter deleted with its current value.
 
 ```
-param.py --delete --path /martin
+ssmParameterManager.py --delete --path /martin
 ``` 
